@@ -1,0 +1,59 @@
+// DataVault — DataListing Contract (Midnight Compact)
+//
+// Stores dataset listings with ZK-verified metadata properties.
+// Providers submit a proof hash; buyers can verify on-chain before purchasing.
+//
+// NOTE: This is a design stub for the Midnight Compact language.
+// Full implementation requires the Midnight SDK (compact-compiler, midnight-js).
+
+pragma compact >= 0.1;
+
+// On-chain state: mapping of listing IDs to their verified proof hashes
+export ledger listings: Map<Bytes32, DataListingState>;
+
+struct DataListingState {
+  provider: Address;
+  proof_hash: Bytes32;        // SHA-256 of the ZK proof properties
+  metadata_hash: Bytes32;     // SHA-256 of the dataset metadata
+  price: Uint64;              // Price in DUST tokens
+  active: Boolean;
+  created_at: Uint64;
+}
+
+// Submit a new listing with a verified proof
+export circuit create_listing(
+  listing_id: Bytes32,
+  proof_hash: Bytes32,
+  metadata_hash: Bytes32,
+  price: Uint64,
+): Void {
+  assert(!listings.has(listing_id), "Listing already exists");
+  assert(price > 0, "Price must be positive");
+
+  listings.set(listing_id, DataListingState {
+    provider: msg.sender,
+    proof_hash: proof_hash,
+    metadata_hash: metadata_hash,
+    price: price,
+    active: true,
+    created_at: block.timestamp,
+  });
+}
+
+// Verify a listing's proof hash matches expected value
+export circuit verify_listing(
+  listing_id: Bytes32,
+  expected_proof_hash: Bytes32,
+): Boolean {
+  const listing = listings.get(listing_id);
+  assert(listing.active, "Listing is not active");
+  return listing.proof_hash == expected_proof_hash;
+}
+
+// Delist (provider only)
+export circuit delist(listing_id: Bytes32): Void {
+  const listing = listings.get(listing_id);
+  assert(listing.provider == msg.sender, "Only provider can delist");
+  listing.active = false;
+  listings.set(listing_id, listing);
+}

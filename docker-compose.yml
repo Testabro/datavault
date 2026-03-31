@@ -1,0 +1,13 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "${DATAVAULT_PORT:-8000}:8000"
+    environment:
+      - DATAVAULT_DB_PATH=/app/data/datavault.db
+    volumes:
+      - datavault-data:/app/data
+
+volumes:
+  datavault-data:

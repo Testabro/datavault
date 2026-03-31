@@ -1,0 +1,59 @@
+// DataVault — Reputation Contract (Midnight Compact)
+//
+// Tracks provider reliability scores based on successful deliveries.
+// Score is public; the data behind it (individual ratings) is private via ZK.
+//
+// NOTE: Design stub for Midnight Compact language.
+
+pragma compact >= 0.1;
+
+export ledger reputations: Map<Address, ReputationData>;
+
+struct ReputationData {
+  total_sales: Uint64;
+  total_ratings: Uint64;
+  rating_sum: Uint64;          // Sum of all ratings (1-5 scale)
+  disputes: Uint64;
+}
+
+// Record a completed sale with buyer rating
+export circuit rate_provider(
+  provider: Address,
+  rating: Uint64,              // 1-5 scale
+): Void {
+  assert(rating >= 1 && rating <= 5, "Rating must be 1-5");
+
+  if (!reputations.has(provider)) {
+    reputations.set(provider, ReputationData {
+      total_sales: 0,
+      total_ratings: 0,
+      rating_sum: 0,
+      disputes: 0,
+    });
+  }
+
+  const rep = reputations.get(provider);
+  rep.total_sales = rep.total_sales + 1;
+  rep.total_ratings = rep.total_ratings + 1;
+  rep.rating_sum = rep.rating_sum + rating;
+  reputations.set(provider, rep);
+}
+
+// Read average rating (public)
+export circuit get_reputation(provider: Address): Uint64 {
+  if (!reputations.has(provider)) {
+    return 0;
+  }
+  const rep = reputations.get(provider);
+  if (rep.total_ratings == 0) {
+    return 0;
+  }
+  return rep.rating_sum / rep.total_ratings;  // Integer division (1-5)
+}
+
+// Record a dispute
+export circuit record_dispute(provider: Address): Void {
+  const rep = reputations.get(provider);
+  rep.disputes = rep.disputes + 1;
+  reputations.set(provider, rep);
+}

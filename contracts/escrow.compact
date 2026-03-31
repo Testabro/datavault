@@ -1,0 +1,75 @@
+// DataVault — Escrow Contract (Midnight Compact)
+//
+// Holds buyer payment until dataset delivery is confirmed.
+// Three states: FUNDED -> DELIVERED -> RELEASED (or REFUNDED)
+//
+// NOTE: Design stub for Midnight Compact language.
+
+pragma compact >= 0.1;
+
+enum EscrowState { FUNDED, DELIVERED, RELEASED, REFUNDED }
+
+export ledger escrows: Map<Bytes32, EscrowData>;
+
+struct EscrowData {
+  buyer: Address;
+  provider: Address;
+  listing_id: Bytes32;
+  amount: Uint64;
+  state: EscrowState;
+  funded_at: Uint64;
+  deadline: Uint64;           // Auto-refund if not delivered by this time
+}
+
+// Buyer funds the escrow
+export circuit fund_escrow(
+  purchase_id: Bytes32,
+  listing_id: Bytes32,
+  provider: Address,
+  deadline_hours: Uint64,
+): Void {
+  assert(!escrows.has(purchase_id), "Escrow already exists");
+  assert(msg.value > 0, "Must send payment");
+
+  escrows.set(purchase_id, EscrowData {
+    buyer: msg.sender,
+    provider: provider,
+    listing_id: listing_id,
+    amount: msg.value,
+    state: EscrowState.FUNDED,
+    funded_at: block.timestamp,
+    deadline: block.timestamp + (deadline_hours * 3600),
+  });
+}
+
+// Provider marks delivery complete (off-chain data sent)
+export circuit mark_delivered(purchase_id: Bytes32): Void {
+  const escrow = escrows.get(purchase_id);
+  assert(escrow.provider == msg.sender, "Only provider can mark delivered");
+  assert(escrow.state == EscrowState.FUNDED, "Must be in FUNDED state");
+
+  escrow.state = EscrowState.DELIVERED;
+  escrows.set(purchase_id, escrow);
+}
+
+// Buyer confirms receipt, releases funds to provider
+export circuit confirm_and_release(purchase_id: Bytes32): Void {
+  const escrow = escrows.get(purchase_id);
+  assert(escrow.buyer == msg.sender, "Only buyer can confirm");
+  assert(escrow.state == EscrowState.DELIVERED, "Must be DELIVERED");
+
+  transfer(escrow.provider, escrow.amount);
+  escrow.state = EscrowState.RELEASED;
+  escrows.set(purchase_id, escrow);
+}
+
+// Auto-refund if deadline passed without delivery
+export circuit refund(purchase_id: Bytes32): Void {
+  const escrow = escrows.get(purchase_id);
+  assert(escrow.state == EscrowState.FUNDED, "Can only refund FUNDED escrows");
+  assert(block.timestamp > escrow.deadline, "Deadline not yet passed");
+
+  transfer(escrow.buyer, escrow.amount);
+  escrow.state = EscrowState.REFUNDED;
+  escrows.set(purchase_id, escrow);
+}
