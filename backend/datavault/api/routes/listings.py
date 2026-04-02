@@ -4,7 +4,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 
 from datavault.crypto.encryption import encrypt_dataset
 from datavault.crypto.proofs import extract_metadata, generate_proof, hash_dataset
-from datavault.models import DataCategory, Listing, ListingCreate, ListingStatus
+from datavault.models import DataCategory, Listing, ListingStatus
 from datavault.storage import database, ipfs
 
 router = APIRouter(prefix="/api/listings", tags=["listings"])

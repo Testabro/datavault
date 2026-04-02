@@ -35,6 +35,6 @@ async def marketplace_stats():
     all_listings = await database.get_listings(limit=10000)
     return {
         "total_listings": len(all_listings),
-        "total_value_lovelace": sum(l.price_lovelace for l in all_listings),
-        "categories": list({l.category.value for l in all_listings}),
+        "total_value_lovelace": sum(listing.price_lovelace for listing in all_listings),
+        "categories": list({listing.category.value for listing in all_listings}),
     }
