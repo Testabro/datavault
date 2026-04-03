@@ -14,7 +14,7 @@ os.environ["DATAVAULT_DB_PATH"] = _tmp.name
 def sample_csv_bytes() -> bytes:
     lines = ["id,age,income,diagnosis"]
     for i in range(100):
-        lines.append(f"{i},{20+i%50},{30000+i*500},{'healthy' if i%3 else 'condition_a'}")
+        lines.append(f"{i},{20 + i % 50},{30000 + i * 500},{'healthy' if i % 3 else 'condition_a'}")
     return "\n".join(lines).encode("utf-8")
 
 

@@ -90,6 +90,7 @@ def _purchase_from_row(row: aiosqlite.Row) -> Purchase:
 
 # ── Listings ──────────────────────────────────────────
 
+
 async def create_listing(listing: Listing) -> Listing:
     db = await _get_db()
     try:
@@ -122,9 +123,7 @@ async def create_listing(listing: Listing) -> Listing:
 async def get_listing(listing_id: str) -> Listing | None:
     db = await _get_db()
     try:
-        rows = await db.execute_fetchall(
-            "SELECT * FROM listings WHERE id = ?", (listing_id,)
-        )
+        rows = await db.execute_fetchall("SELECT * FROM listings WHERE id = ?", (listing_id,))
         return _listing_from_row(rows[0]) if rows else None
     finally:
         await db.close()
@@ -165,6 +164,7 @@ async def update_listing_status(listing_id: str, status: ListingStatus) -> None:
 
 # ── Purchases ─────────────────────────────────────────
 
+
 async def create_purchase(purchase: Purchase) -> Purchase:
     db = await _get_db()
     try:
@@ -193,9 +193,7 @@ async def create_purchase(purchase: Purchase) -> Purchase:
 async def get_purchase(purchase_id: str) -> Purchase | None:
     db = await _get_db()
     try:
-        rows = await db.execute_fetchall(
-            "SELECT * FROM purchases WHERE id = ?", (purchase_id,)
-        )
+        rows = await db.execute_fetchall("SELECT * FROM purchases WHERE id = ?", (purchase_id,))
         return _purchase_from_row(rows[0]) if rows else None
     finally:
         await db.close()

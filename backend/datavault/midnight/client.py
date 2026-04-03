@@ -8,6 +8,7 @@ This module abstracts Midnight RPC calls for:
 
 MVP: Uses mock responses. Production: connects to Midnight RPC endpoint.
 """
+
 import logging
 from dataclasses import dataclass
 

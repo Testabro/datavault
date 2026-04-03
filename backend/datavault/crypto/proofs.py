@@ -5,6 +5,7 @@ For MVP, we generate a deterministic hash-based proof of dataset properties
 that can be verified independently. The Midnight integration will replace
 the hash with an actual ZK proof once contracts are deployed.
 """
+
 import hashlib
 import json
 from datetime import datetime

@@ -31,6 +31,7 @@ class DataCategory(str, Enum):
 
 class DatasetMetadata(BaseModel):
     """Extracted metadata from an uploaded dataset — public, verifiable."""
+
     row_count: int
     column_count: int
     columns: list[str]
@@ -45,6 +46,7 @@ class DatasetMetadata(BaseModel):
 
 class ZKProof(BaseModel):
     """Zero-knowledge proof of dataset properties."""
+
     proof_hash: str
     verified_properties: dict[str, str]  # property_name -> proven_value
     proof_timestamp: datetime
