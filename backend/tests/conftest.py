@@ -1,9 +1,13 @@
 import os
+import tempfile
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-os.environ["DATAVAULT_DB_PATH"] = ":memory:"
+# Use a temp file DB so data persists across connections within a test
+_tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+_tmp.close()
+os.environ["DATAVAULT_DB_PATH"] = _tmp.name
 
 
 @pytest.fixture
